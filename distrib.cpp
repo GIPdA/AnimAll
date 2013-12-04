@@ -31,6 +31,7 @@ enum DistribState { Running, Waiting };
 static DistribState eDistribState = Waiting;
 
 fstream xCmdFile;
+int cycleCount = 0;
 int fd, wd;
 
 
@@ -63,8 +64,6 @@ void signalIntHandler(int signum)
 
 void startMotor()
 {
-    eDistribState = Running;
-
     softPwmWrite(STATUS_LED_PIN, 8000);
     //softPwmCreate(STATUS_LED_PIN, 1000, 2000);
 
@@ -75,8 +74,6 @@ void stopMotor()
 {
     digitalWrite(MOTOR_PIN, 0);
 
-    eDistribState = Waiting;
-
     softPwmWrite(STATUS_LED_PIN, 1000);
     //softPwmCreate(STATUS_LED_PIN, 1000, 10000);
 }
@@ -84,7 +81,9 @@ void stopMotor()
 
 void switchInterrupt()
 {
-    stopMotor();
+    if (cycleCount && --cycleCount <= 0) {
+        stopMotor();
+    }
 }
 
 void startInterrupt()
@@ -95,29 +94,22 @@ void startInterrupt()
 
 bool processCommand(string cmdStr)
 {
-    cout << "Process " << cmdStr << endl;
+    cout << "Process line: '" << cmdStr << "'" << endl;
     if (cmdStr.find("start") == 0)
     {
-        if (eDistribState == Running) {
-            // Motor is running, discard commands
-            xCmdFile << "<run>\n";
-            return false;
-        }
-        cout << "Starting motor" << endl;
+        cout << "Starting motor (" << ++cycleCount << ")" << endl;
         startMotor();
-        xCmdFile << "<ok>\n";
         return true;
     }
 
     if (cmdStr.find("stop") == 0)
     {
         cout << "Stopping motor" << endl;
+        cycleCount = 0;
         stopMotor();
-        xCmdFile << "<ok>\n";
         return true;
     }
 
-    xCmdFile << "<err>\n";
     return false;
 }
 
@@ -134,41 +126,50 @@ int main(int argc, char *argv[])
     int length;
     struct inotify_event inotifyEvt;
     string controlFilePath;
+    unsigned char was_modified = 0;
+    int last_pos;
+    string line;
+
 
     cout << "Starting Distrib..." << endl;
 
 // * Control file *********************************
-    if (argc != 2) 
-    {
+    if (argc != 2) {
         // No file path specified, set default
         controlFilePath = DEFAULT_CMD_FILE_NAME;
         cout << "No control file specified, use default at: " DEFAULT_CMD_FILE_NAME << endl;
-    }
-    else {
+    } else {
         cout << "Using control file: " << argv[1] << endl;
         controlFilePath = argv[1];
     }
 
     // Test if file exists and try to create it if not
-    xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out);
+    xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out | ios::app);
 
-    if (!xCmdFile.is_open())
-    {
-        // Create file
-        time_t now = time(NULL);
-        char *dt = asctime(localtime(&now));
-        dt[strlen(dt)-1]='\0';
-        xCmdFile.open(controlFilePath.c_str(), ios::out | ios::app);
+    if (!xCmdFile.is_open()) {
+        // Create control file
+        xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out | ios::app);
 
-        if (xCmdFile.is_open()) {
-            // Write new session
-            xCmdFile << "<New session - " << dt << " >" << endl;
-        } else {
+        if (!xCmdFile.is_open()) {
+            // Unable to create control file
             cerr << "Unable to write " << controlFilePath << endl;
             exit(EXIT_FAILURE);
         }
     }
-    
+
+    // Compute timestamp
+    time_t now = time(NULL);
+    char *dt = asctime(localtime(&now));
+    dt[strlen(dt)-1]='\0';
+
+    xCmdFile.seekp(0, ios::end);
+    // Write new session
+    xCmdFile << "<" << dt << ">" << endl;
+
+    // Update last pos
+    xCmdFile.seekg(0, ios::end);
+    last_pos = xCmdFile.tellg();
+
     xCmdFile.close();
 // * Control file *********************************
 
@@ -223,14 +224,8 @@ int main(int argc, char *argv[])
     cout << "Distrib setup done. Waiting..." << endl;
 
 
-
-    unsigned char was_modified = 0, skip_next = 0;
-    int last_pos;
-    string line, line_temp;
-
     // Loop, wait for new line in file
-    for (;;)
-    {
+    for (;;) {
         //cout << "Wait..." << endl;
 
         // Wait for file change
@@ -247,8 +242,7 @@ int main(int argc, char *argv[])
         if (    (inotifyEvt.mask & IN_MODIFY)
             && !(inotifyEvt.mask & IN_ISDIR) )
         {
-            was_modified = !skip_next;
-            skip_next = 0;
+            was_modified = 1;
         }
 
 
@@ -259,34 +253,21 @@ int main(int argc, char *argv[])
         {
             // Get lines
             was_modified = 0;
+            cout << "Control file modified, process changes..." << endl;
 
-            xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out);
+            xCmdFile.open(controlFilePath.c_str(), ios::in);
 
-            if (xCmdFile.is_open())
-            {
-                // Go to last pos (get)
+            if (xCmdFile.is_open()) {
+                // Seek to last pos
                 xCmdFile.seekg(last_pos);
 
-                // Get last line
-                do {
-                    line = line_temp;
-                    getline(xCmdFile, line_temp);
-                } while (!line_temp.empty());
-
-
-                // Seek to end of line before \n
-                //xCmdFile.seekp((int)xCmdFile.tellg() - 1);
-                xCmdFile.seekp(-1, ios::end);
-
-                // Process command
-                processCommand(line);
-
-
-                // Update last pos
-                xCmdFile.seekg(0, ios::end);
-                last_pos = xCmdFile.tellg();
-
-                skip_next = 1;
+                // Process lines
+                while (getline(xCmdFile, line)) {
+                    last_pos = xCmdFile.tellg();
+                    if (!line.empty()) {
+                        processCommand(line);
+                    }
+                }
 
                 xCmdFile.close();
             }
