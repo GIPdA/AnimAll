@@ -13,7 +13,7 @@ test -x $DAEMON || exit 0
 
 d_start () {
         echo "Starting system $DAEMON_NAME Daemon"
-        start-stop-daemon --background --name $DAEMON_NAME --start --chuid $DAEMONUSER --exec $DAEMON --DAEMON_CTRL_FILE
+        start-stop-daemon --background --name $DAEMON_NAME --start --chuid $DAEMONUSER --exec $DAEMON -- DAEMON_CTRL_FILE
 }
 
 d_stop () {
