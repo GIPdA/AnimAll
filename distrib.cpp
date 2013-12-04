@@ -3,6 +3,7 @@
  * @brief Distrib controller
  */
 
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
@@ -12,6 +13,8 @@
 #include <signal.h>
 #include <ctime>
 #include <cstring>
+#include <sys/types.h>
+#include <unistd.h>
 #include <wiringPi.h>
 #include <softPwm.h>
 
@@ -23,7 +26,8 @@ using namespace std;
 #define START_MOTOR_PIN 2
 #define STATUS_LED_PIN  3
 
-#define DEFAULT_CMD_FILE_NAME "/home/pi/distributeur/distrib.ctl"
+#define DEFAULT_CMD_FILE_NAME "/home/pi/distributeur/distrib.ctrl"
+#define CHOWN_USER "pi"
 
 
 fstream xCmdFile;
@@ -140,15 +144,23 @@ int main(int argc, char *argv[])
     }
 
     // Test if file exists and try to create it if not
-    xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out | ios::app);
+    xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out);
 
     if (!xCmdFile.is_open()) {
         // Create control file
+        cout << "Create file " << controlFilePath << endl;
+
         xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out | ios::app);
 
         if (!xCmdFile.is_open()) {
             // Unable to create control file
             cerr << "Unable to write " << controlFilePath << endl;
+            exit(EXIT_FAILURE);
+        }
+
+        struct passwd *pwd = getpwnam(CHOWN_USER);
+        if (!pwd || chown(controlFilePath.c_str(), pwd->pw_uid, pwd->pw_gid) == -1) {
+            cout << "chown error: " << controlFilePath << endl;
             exit(EXIT_FAILURE);
         }
     }
