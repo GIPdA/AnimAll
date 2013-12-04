@@ -16,8 +16,8 @@ Hardware part of AnimAll project
 ## Installation
 
 1. Compiler *distrib* (`g++ -Wall distrib.cpp -o distrib -lwiringPi -lpthread`)
-2. Copier le binaire *distrib* dans */usr/local/bin*
-3. Copier *distrib_startup.sh* dans */etc/init.d/*
+2. Copier le binaire *distrib* dans */usr/local/bin* (`sudo cp distrib /usr/local/bin/`)
+3. Copier *distrib_startup.sh* dans */etc/init.d/* (`sudo cp distrib_startup.sh /etc/init.d/`)
 4. Modifier le chemin du fichier de contrôle si besoin dans *distrib_startup.sh*
 
 ## Utilisation
