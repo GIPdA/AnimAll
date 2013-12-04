@@ -26,10 +26,6 @@ using namespace std;
 #define DEFAULT_CMD_FILE_NAME "/home/pi/distributeur/distrib.ctl"
 
 
-enum DistribState { Running, Waiting };
-
-static DistribState eDistribState = Waiting;
-
 fstream xCmdFile;
 int cycleCount = 0;
 int fd, wd;
