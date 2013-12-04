@@ -3,7 +3,7 @@
 DAEMON=/usr/local/bin/distrib #ligne de commande du programme
 DAEMONUSER=root #utilisateur du programme
 DAEMON_NAME=distrib #Nom du programme (doit être identique à l'exécutable)
-DAEMON_CTRL_FILE=/proc/distrib.ctrl
+DAEMON_CTRL_FILE=/tmp/distrib.ctrl
 
 PATH="/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin"
 
