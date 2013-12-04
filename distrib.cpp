@@ -10,6 +10,8 @@
 #include <fstream>
 #include <sys/inotify.h>
 #include <signal.h>
+#include <ctime>
+#include <cstring>
 #include <wiringPi.h>
 #include <softPwm.h>
 
@@ -21,7 +23,7 @@ using namespace std;
 #define START_MOTOR_PIN 2
 #define STATUS_LED_PIN  3
 
-#define CMD_FILE_NAME "/home/pi/distributeur/distrib.ctl"
+#define DEFAULT_CMD_FILE_NAME "/home/pi/distributeur/distrib.ctl"
 
 
 enum DistribState { Running, Waiting };
@@ -127,12 +129,48 @@ bool processCommand(string cmdStr)
  *********************************************************************************
  */
 
-int main (void)
+int main(int argc, char *argv[])
 {
     int length;
     struct inotify_event inotifyEvt;
+    string controlFilePath;
 
-    cout << "Starting Distrib... ";
+    cout << "Starting Distrib..." << endl;
+
+// * Control file *********************************
+    if (argc != 2) 
+    {
+        // No file path specified, set default
+        controlFilePath = DEFAULT_CMD_FILE_NAME;
+        cout << "No control file specified, use default at: " DEFAULT_CMD_FILE_NAME << endl;
+    }
+    else {
+        cout << "Using control file: " << argv[1] << endl;
+        controlFilePath = argv[1];
+    }
+
+    // Test if file exists and try to create it if not
+    xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out);
+
+    if (!xCmdFile.is_open())
+    {
+        // Create file
+        time_t now = time(NULL);
+        char *dt = asctime(localtime(&now));
+        dt[strlen(dt)-1]='\0';
+        xCmdFile.open(controlFilePath.c_str(), ios::out | ios::app);
+
+        if (xCmdFile.is_open()) {
+            // Write new session
+            xCmdFile << "<New session - " << dt << " >" << endl;
+        } else {
+            cerr << "Unable to write " << controlFilePath << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+    
+    xCmdFile.close();
+// * Control file *********************************
 
 
     // Register signal and signal handler
@@ -146,17 +184,15 @@ int main (void)
 
     if (fd < 0) {
         cerr << "Unable to init inotify" << endl;
-        cout << "failed." << endl;
         exit(EXIT_FAILURE);
     }
 
     // Adding the command file into watch list.
     // Watch for closing writes
-    wd = inotify_add_watch(fd, CMD_FILE_NAME, IN_MODIFY | IN_CLOSE_WRITE);
+    wd = inotify_add_watch(fd, controlFilePath.c_str(), IN_MODIFY | IN_CLOSE_WRITE);
 
     if (wd < 0) {
         cerr << "inotify watch failed" << endl;
-        cout << "failed." << endl;
         close(fd);
         exit(EXIT_FAILURE);
     }
@@ -184,11 +220,10 @@ int main (void)
 // * WiringPi *********************************
 
 
-    cout << "ok." << endl;
+    cout << "Distrib setup done. Waiting..." << endl;
 
 
 
-    
     unsigned char was_modified = 0, skip_next = 0;
     int last_pos;
     string line, line_temp;
@@ -225,7 +260,7 @@ int main (void)
             // Get lines
             was_modified = 0;
 
-            xCmdFile.open(CMD_FILE_NAME, ios::in | ios::out);
+            xCmdFile.open(controlFilePath.c_str(), ios::in | ios::out);
 
             if (xCmdFile.is_open())
             {
