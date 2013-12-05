@@ -9,20 +9,19 @@ Feeder part of AnimAll project
 ## Prérequis
 
 1. Raspberry Pi (Raspbian)
-2. WiringPi2
+2. [WiringPi2](http://wiringpi.com/download-and-install/)
 3. Compilateur gcc...
 
 
-## Installation
+## Compilation
 
-1. Compiler *distrib* (`g++ -Wall distrib.cpp -o distrib -lwiringPi -lpthread`)
-2. Copier le binaire *distrib* dans */usr/local/bin* (`sudo cp distrib /usr/local/bin/`)
-3. Copier *distrib_startup.sh* dans */etc/init.d/* (`sudo cp distrib_startup.sh /etc/init.d/`)
-4. Modifier le chemin du fichier de contrôle si besoin dans *distrib_startup.sh* (`DAEMON_CTRL_FILE`)
+`g++ -Wall main.cpp feeder.c -o feeder -lwiringPi`
 
-## Utilisation
+## Utilisation de feeder
 
-##### Commandes :
-Écrire `start` avec un retour à la ligne dans le fichier de contrôle pour lancer un cycle. `stop` pour arrêter le moteur et mettre à zéro le compteur de cycles restants.
+Initialiser la couche I/O en appelant `bFeeder_setup()`.
+**Le programme doit posséder les droits root ou quittera avec une erreur !**
 
-Écrire plusieurs `start` pour lancer plusieurs cycles d'affilée (séparés par un retour à la ligne).
+Lancer des cycles en appelant `uiFeeder_startCycle()`.
+
+Avant de quitter le programme, appeler `vFeeder_cleanup()` pour "nettoyer" la couche I/O.
