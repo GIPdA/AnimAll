@@ -40,10 +40,13 @@ int main(int argc, char *argv[])
 
     cout << "Feeder started." << endl;
 
+    cout << "Start cycle..." << endl;
     uiFeeder_startCycle();
 
     while (1) {
     	sleep(10);
+
+    	cout << "Start cycle..." << endl;
     	uiFeeder_startCycle();
     }
 
