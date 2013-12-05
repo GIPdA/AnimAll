@@ -46,6 +46,5 @@ int main(int argc, char *argv[])
     	uiFeeder_startCycle();
     }
 
-
     return 0 ;
 }

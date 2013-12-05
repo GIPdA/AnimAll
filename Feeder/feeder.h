@@ -52,4 +52,4 @@ void vFeeder_cancel();
 void vFeeder_cleanup();
 
 
-#endif _FEEDER_H_
+#endif // _FEEDER_H_
