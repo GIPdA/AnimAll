@@ -1,7 +1,7 @@
 AnimAll
 =======
 
-Hardware part of AnimAll project
+Feeder part of AnimAll project
 
 
 ----
