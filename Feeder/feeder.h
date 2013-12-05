@@ -45,7 +45,7 @@ void vFeeder_stop();
 void vFeeder_cancel();
 
 /**
- * @brief Cleanup Feeder I/O layer. Must be called before exit
+ * @brief Cleanup Feeder I/O layer. Must be called before exiting.
  *
  * @return Nothing
  */
