@@ -1,6 +1,9 @@
-/*
+/**
  * @file feeder.c
+ *
  * @brief Feeder controller
+ *
+ * @author Benjamin Balga
  */
 
 
@@ -9,6 +12,16 @@
 #include <softPwm.h>
 
 #include "feeder.h"
+
+
+/* **************************************************************** *
+ *  Local defines
+ * **************************************************************** */
+
+#define MOTOR_PIN       0   /*! Pin # of feeder motor control (active high) */
+#define SWITCH_PIN      7   /*! Pin # of feeder end-of-cycle switch */
+#define START_MOTOR_PIN 2   /*! Pin # of external start input (active low) */
+#define STATUS_LED_PIN  3   /*! Pin # of status LED */
 
 
 /* **************************************************************** *
@@ -50,7 +63,7 @@ bool bFeeder_setup()
 
 
 
-/*
+/**
  * @brief Feeder end-of-cycle ISR.
  */
 static void prv_vFeeder_switchISR()
@@ -63,14 +76,14 @@ static void prv_vFeeder_switchISR()
     }
 }
 
-/*
+/**
  * @brief Start feeder cycle from hardware (push-button input)
  */
 static void prv_vFeeder_startCycleISR()
 {
     if (digitalRead(START_MOTOR_PIN) == 0)   // Work-around for WiringPi ISR bug
         return;
-    
+
     uiFeeder_startCycle();
 }
 
