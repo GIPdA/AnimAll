@@ -45,6 +45,13 @@ void vFeeder_stop();
 void vFeeder_cancel();
 
 /**
+ * @brief Get the running state of the feeder
+ *
+ * @return Running state
+ */
+bool bFeeder_isRunning();
+
+/**
  * @brief Cleanup Feeder I/O layer. Must be called before exiting.
  *
  * @return Nothing

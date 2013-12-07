@@ -29,6 +29,7 @@
  * **************************************************************** */
 
 static unsigned int uiCycleCount = 0;
+static bool bIsRunning = 0;
 
 
 /* **************************************************************** *
@@ -81,6 +82,7 @@ static void prv_vFeeder_switchISR()
 
     if (uiCycleCount && --uiCycleCount <= 0) {
         vFeeder_stop();
+        bIsRunning = 0;
     }
 }
 
@@ -99,6 +101,7 @@ static void prv_vFeeder_startCycleISR()
 
 void vFeeder_cleanup()
 {
+    bIsRunning = 0;
     digitalWrite(MOTOR_PIN, 0);
     pinMode(MOTOR_PIN, INPUT);
     digitalWrite(STATUS_LED_PIN, 0);
@@ -108,6 +111,8 @@ void vFeeder_cleanup()
 
 unsigned int uiFeeder_startCycle()
 {
+    bIsRunning = 1;
+
     softPwmWrite(STATUS_LED_PIN, 8000);
     digitalWrite(MOTOR_PIN, 1);
 
@@ -120,5 +125,10 @@ void vFeeder_stop()
     softPwmWrite(STATUS_LED_PIN, 1000);
 
     uiCycleCount = 0;
+}
+
+bool bFeeder_isRunning()
+{
+    return bIsRunning;
 }
 
