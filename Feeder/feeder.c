@@ -30,6 +30,7 @@
 
 static unsigned int uiCycleCount = 0;
 static bool bIsRunning = 0;
+static bool bCleanStop = 0;
 
 
 /* **************************************************************** *
@@ -80,6 +81,13 @@ static void prv_vFeeder_switchISR()
     if (digitalRead(SWITCH_PIN) == 0)   // Work-around for WiringPi ISR bug
         return;
 
+    if (bCleanStop) {
+        vFeeder_stop();
+        bIsRunning = 0;
+        bCleanStop = 0;
+        return;
+    }
+
     if (uiCycleCount && --uiCycleCount <= 0) {
         vFeeder_stop();
         bIsRunning = 0;
@@ -102,6 +110,7 @@ static void prv_vFeeder_startCycleISR()
 void vFeeder_cleanup()
 {
     bIsRunning = 0;
+    uiCycleCount = 0;
     digitalWrite(MOTOR_PIN, 0);
     pinMode(MOTOR_PIN, INPUT);
     digitalWrite(STATUS_LED_PIN, 0);
@@ -125,6 +134,13 @@ void vFeeder_stop()
     softPwmWrite(STATUS_LED_PIN, 1000);
 
     uiCycleCount = 0;
+}
+
+void vFeeder_cancel()
+{
+    if (bIsRunning) {
+        bCleanStop = 1;
+    }
 }
 
 bool bFeeder_isRunning()
