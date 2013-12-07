@@ -24,7 +24,7 @@ bool bFeeder_setup();
  *
  * @return The number of remaining cycles.
  */
-unsigned int uiFeeder_startCycle();
+int iFeeder_startCycle();
 
 /**
  * @brief Stop all Feeder cycles. Motor is stopped right away and the cycle count is reset.

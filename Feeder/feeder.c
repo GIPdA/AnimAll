@@ -28,7 +28,7 @@
  *  Private variables
  * **************************************************************** */
 
-static unsigned int uiCycleCount = 0;
+static int uiCycleCount = 0;
 static bool bIsRunning = 0;
 static bool bCleanStop = 0;
 
@@ -118,7 +118,7 @@ void vFeeder_cleanup()
 }
 
 
-unsigned int uiFeeder_startCycle()
+int iFeeder_startCycle()
 {
     bIsRunning = 1;
 
