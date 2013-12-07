@@ -52,6 +52,14 @@ void vFeeder_cancel();
 bool bFeeder_isRunning();
 
 /**
+ * @brief Get the remaining feeder cycles
+ *
+ * @return Remaining cycles count
+ */
+int iFeeder_remainingCycles();
+
+
+/**
  * @brief Cleanup Feeder I/O layer. Must be called before exiting.
  *
  * @return Nothing

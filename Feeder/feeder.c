@@ -148,3 +148,7 @@ bool bFeeder_isRunning()
     return bIsRunning;
 }
 
+int bFeeder_remainingCycles()
+{
+    return uiCycleCount;
+}
