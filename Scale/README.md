@@ -18,7 +18,8 @@ Scale part of AnimAll project
 
 `g++ -Wall main.cpp scale.c -o scale -lwiringPi -lpthread`
 
-or use the makefile.
+ou utilisez le makefile.
+
 
 ## Utilisation de scale
 
