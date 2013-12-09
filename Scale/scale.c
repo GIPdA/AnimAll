@@ -27,6 +27,8 @@
 
 #define FILTER_TAP_NUM 128
 
+#define SCALE_PRECISION 5   /*! in gr */
+
 /* **************************************************************** *
  *  Private variables
  * **************************************************************** */
@@ -36,7 +38,11 @@ typedef struct {
   unsigned int last_index;
 } Filter;
 
-Filter filter;
+static Filter filter;
+
+static double prv_rawToWeightMultiple = 1.0;
+static double prv_referenceValue = 0.0;
+static unsigned char prv_wasTare = 0;
 
 
 /* **************************************************************** *
@@ -99,6 +105,8 @@ bool bScale_setup()
 
     prv_filter_init(&filter);
 
+    prv_rawToWeightMultiple = 1.666667;
+
     int res = piThreadCreate(scaleThread);
 
     if (res < 0) {
@@ -152,35 +160,29 @@ static int roundUp(int numToRound, int multiple)
 }
 
 
+void vScale_tareScale()
+{
+    prv_referenceValue = prv_filter_get(&filter);
+}
+
+
 
 bool bScale_getWeight(int * const iMeasuredWeight)
 {
-    unsigned char data[2] = {0};
-    int weight = 0;
-
     if (!iMeasuredWeight) return false;
 
     // Turn on status led to indicate activity
     digitalWrite(STATUS_LED_PIN, 1);
 
-    // Get ADC measurement
-    if (wiringPiSPIDataRW(SPI_CHANNEL, &data[0], 2) < 0) {
-        // Error occured in SPI transfert
-        return false;
+    double v = prv_filter_get(&filter);
+
+    if (!prv_wasTare) {
+        prv_wasTare = 1;
+        vScale_tareScale();
     }
 
-    //cout << "Buffer: " << (int)dataBuffer[0] << ", " << (int)dataBuffer[1] << endl;
-
-    // Compute raw value from ADC
-    int rawValue = ((data[1]&0xFE) >> 1) | (( (int)data[0]&0x1F) << 7);
-
-    // Compute voltage from raw
-    double voltValue = (double)rawValue * 5.0/4096.0;
-
-    //cout << "Raw: " << rawValue << "  = " << voltValue << " V" << endl;
-
     // Compute weight
-    weight = voltValue;
+    int weight = roundUp((int)((v-prv_referenceValue)*prv_rawToWeightMultiple, SCALE_PRECISION));
 
     // Turn off status led
     digitalWrite(STATUS_LED_PIN, 0);
