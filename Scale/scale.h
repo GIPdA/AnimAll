@@ -27,6 +27,14 @@ bool bScale_setup();
 bool bScale_getWeight(int * const iMeasuredWeight);
 
 /**
+ * @brief Set the current weight as reference. (Tare the scale)
+ * Should be called some seconds after initialization.
+ *
+ * @return Nothing
+ */
+void vScale_tareScale();
+
+/**
  * @brief Cleanup Scale I/O layer. Must be called before exiting.
  *
  * @return Nothing
