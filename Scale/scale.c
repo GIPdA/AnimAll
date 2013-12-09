@@ -20,6 +20,8 @@
  *  Local defines
  * **************************************************************** */
 
+#define DEFAULT_WEIGHT_MULTIPLE (700.0/(2133.0-1140.0))
+
 #define STATUS_LED_PIN  6   /*! Pin # of status LED */
 
 #define SPI_CHANNEL 0       /*! SPI channel # of ADC converter */
@@ -105,7 +107,7 @@ bool bScale_setup()
 
     prv_filter_init(&filter);
 
-    prv_rawToWeightMultiple = 1.666667;
+    prv_rawToWeightMultiple = DEFAULT_WEIGHT_MULTIPLE;
 
     int res = piThreadCreate(scaleThread);
 
