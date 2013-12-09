@@ -177,7 +177,7 @@ bool bScale_getWeight(int * const iMeasuredWeight)
     // Compute voltage from raw
     double voltValue = (double)rawValue * 5.0/4096.0;
 
-    cout << "Raw: " << rawValue << "  = " << voltValue << " V" << endl;
+    //cout << "Raw: " << rawValue << "  = " << voltValue << " V" << endl;
 
     // Compute weight
     weight = voltValue;
