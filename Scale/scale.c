@@ -182,7 +182,7 @@ bool bScale_getWeight(int * const iMeasuredWeight)
     }
 
     // Compute weight
-    int weight = roundUp((int)((v-prv_referenceValue)*prv_rawToWeightMultiple, SCALE_PRECISION));
+    int weight = roundUp((int)((v-prv_referenceValue)*prv_rawToWeightMultiple), SCALE_PRECISION);
 
     // Turn off status led
     digitalWrite(STATUS_LED_PIN, 0);
