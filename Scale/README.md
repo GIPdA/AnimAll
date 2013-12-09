@@ -16,12 +16,16 @@ Scale part of AnimAll project
 
 ## Compilation
 
-`g++ -Wall main.cpp scale.c -o scale -lwiringPi`
+`g++ -Wall main.cpp scale.c -o scale -lwiringPi -lpthread`
+
+or use the makefile.
 
 ## Utilisation de scale
 
 Initialiser la couche I/O en appelant `bScale_setup()`.
 **Le programme doit posséder les droits root sous peine de quitter avec une erreur !**
+
+Efectuer une tare via `vScale_tareScale()` quelques secondes après le setup et dès que nécessaire ensuite. Sinon le premier appel de `bScale_getWeight(...)` effectue une tare.
 
 Récupérer le poids de la balance via `bScale_getWeight(...)` autant de fois que nécessaire.
 
