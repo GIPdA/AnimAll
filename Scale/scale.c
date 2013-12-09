@@ -165,6 +165,7 @@ static int roundUp(int numToRound, int multiple)
 void vScale_tareScale()
 {
     prv_referenceValue = prv_filter_get(&filter);
+    prv_wasTare = 1;
 }
 
 
