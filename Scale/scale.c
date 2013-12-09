@@ -97,7 +97,7 @@ bool bScale_setup()
     pinMode(STATUS_LED_PIN, OUTPUT);
     digitalWrite(STATUS_LED_PIN, 0);
 
-    Filter_init(&filter);
+    prv_filter_init(&filter);
 
     int res = piThreadCreate(scaleThread);
 
